@@ -124,3 +124,5 @@ describe("Lock", function () {
     });
   });
 });
+
+// pengenalan web3 dari js

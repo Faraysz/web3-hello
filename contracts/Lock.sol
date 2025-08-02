@@ -8,3 +8,4 @@ contract HelloWeb3 {
         message = _msg;
     }
 }
+

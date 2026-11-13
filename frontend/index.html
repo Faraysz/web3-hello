@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web3 Hello - DApp Preview</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Ethers.js CDN (v6) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-indigo-500 selection:text-white">
+
+  <!-- Background Glow FX -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/2 -right-40 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="border-b border-slate-800/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/30">
+          W3
+        </div>
+        <div>
+          <span class="font-bold text-lg bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">HelloWeb3 DApp</span>
+          <span class="text-xs ml-2 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Preview Mode</span>
+        </div>
+      </div>
+
+      <button id="connectWalletBtn" onclick="toggleWalletConnection()" class="px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 transition-all duration-200 shadow-lg shadow-indigo-600/25 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span id="walletBtnText">Connect Wallet</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-2xl mx-auto px-6 py-12 flex-1 w-full flex flex-col justify-center">
+
+    <!-- Card Container -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-8 shadow-2xl backdrop-blur-xl relative overflow-hidden">
+      <div class="absolute top-0 right-0 p-4">
+        <span id="networkBadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">Simulasi / Mock</span>
+      </div>
+
+      <!-- Title & Description -->
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-white mb-1">Smart Contract Interface</h1>
+        <p class="text-sm text-slate-400">Interaksi dengan kontrak <code class="text-indigo-400 font-mono bg-indigo-950/60 px-1.5 py-0.5 rounded">HelloWeb3.sol</code> secara realtime.</p>
+      </div>
+
+      <!-- Current State Display -->
+      <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-5 mb-6">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-medium text-slate-400 uppercase tracking-wider">Current Message on Chain</span>
+          <span class="inline-flex items-center gap-1.5 text-xs text-emerald-400">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Synchronized
+          </span>
+        </div>
+        <div id="currentMessageDisplay" class="text-2xl font-semibold text-white tracking-tight break-words py-2 font-mono text-indigo-300">
+          "Halo Dunia Web3!"
+        </div>
+      </div>
+
+      <!-- Form Set Message -->
+      <form id="setMessageForm" onsubmit="handleSetMessage(event)" class="space-y-4">
+        <div>
+          <label for="newMessageInput" class="block text-sm font-medium text-slate-300 mb-2">
+            Perbarui Pesan (<span class="font-mono text-xs text-indigo-400">setMessage</span>):
+          </label>
+          <div class="relative">
+            <input 
+              type="text" 
+              id="newMessageInput" 
+              placeholder="Ketikkan pesan baru..." 
+              required
+              class="w-full bg-slate-950/90 border border-slate-700/80 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl px-4 py-3 text-white placeholder-slate-500 outline-none transition-all duration-200"
+            />
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          id="submitBtn"
+          class="w-full py-3.5 px-4 rounded-xl font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 active:scale-[0.99] transition-all duration-200 shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2"
+        >
+          <svg id="submitIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span id="submitText">Kirim Transaksi (setMessage)</span>
+        </button>
+      </form>
+
+      <!-- Logs / Feedback Alert -->
+      <div id="statusAlert" class="mt-6 hidden p-4 rounded-xl text-sm border"></div>
+    </div>
+
+    <!-- Contract Details Info -->
+    <div class="mt-6 text-center text-xs text-slate-500">
+      Kontrak: <span class="font-mono text-slate-400">HelloWeb3</span> • Framework: <span class="text-slate-400 font-semibold">Hardhat</span>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
+    Proyek web3-hello • Frontend Preview
+  </footer>
+
+  <script>
+    // State aplikasi
+    let currentMessage = "Halo Dunia Web3!";
+    let isWalletConnected = false;
+    let connectedAddress = null;
+
+    function renderMessage() {
+      document.getElementById("currentMessageDisplay").textContent = `"${currentMessage}"`;
+    }
+
+    // Toggle simulasi / koneksi wallet
+    async function toggleWalletConnection() {
+      const btnText = document.getElementById("walletBtnText");
+      const networkBadge = document.getElementById("networkBadge");
+
+      // Cek apakah user punya MetaMask / Web3 provider
+      if (window.ethereum) {
+        try {
+          if (!isWalletConnected) {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            connectedAddress = accounts[0];
+            isWalletConnected = true;
+            btnText.textContent = `${connectedAddress.substring(0, 6)}...${connectedAddress.substring(38)}`;
+            networkBadge.textContent = "Web3 Connected (MetaMask)";
+            networkBadge.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+            showStatus("Wallet terhubung: " + connectedAddress, "success");
+            return;
+          }
+        } catch (err) {
+          console.warn("User menolak koneksi wallet atau error:", err);
+        }
+      }
+
+      // Simulasi Mode jika tidak ada ekstensi MetaMask
+      isWalletConnected = !isWalletConnected;
+      if (isWalletConnected) {
+        connectedAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+        btnText.textContent = "0xf39F...2266 (Mock)";
+        networkBadge.textContent = "Hardhat Local (Mock)";
+        networkBadge.className = "text-xs px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
+        showStatus("Terhubung ke simulasi akun Hardhat #0", "info");
+      } else {
+        connectedAddress = null;
+        btnText.textContent = "Connect Wallet";
+        networkBadge.textContent = "Simulasi / Mock";
+        networkBadge.className = "text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700";
+        showStatus("Wallet terputus", "info");
+      }
+    }
+
+    // Kirim pesan baru
+    async function handleSetMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById("newMessageInput");
+      const val = input.value.trim();
+      if (!val) return;
+
+      const submitBtn = document.getElementById("submitBtn");
+      const submitText = document.getElementById("submitText");
+      
+      // Loading state (efek simulasi transaksi blockchain)
+      submitBtn.disabled = true;
+      submitBtn.classList.add("opacity-70", "cursor-not-allowed");
+      submitText.textContent = "Memproses transaksi ke blockchain...";
+      showStatus("Mengirim transaksi pembaruan pesan...", "info");
+
+      setTimeout(() => {
+        currentMessage = val;
+        renderMessage();
+        input.value = "";
+        
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("opacity-70", "cursor-not-allowed");
+        submitText.textContent = "Kirim Transaksi (setMessage)";
+        showStatus(`Sukses! State 'message' berhasil diperbarui menjadi: "${val}"`, "success");
+      }, 900);
+    }
+
+    function showStatus(text, type) {
+      const alert = document.getElementById("statusAlert");
+      alert.classList.remove("hidden", "bg-emerald-500/10", "text-emerald-300", "border-emerald-500/30", "bg-indigo-500/10", "text-indigo-300", "border-indigo-500/30");
+      
+      if (type === "success") {
+        alert.classList.add("bg-emerald-500/10", "text-emerald-300", "border-emerald-500/30");
+      } else {
+        alert.classList.add("bg-indigo-500/10", "text-indigo-300", "border-indigo-500/30");
+      }
+      alert.textContent = text;
+    }
+
+    // Init
+    renderMessage();
+  </script>
+</body>
+</html>
